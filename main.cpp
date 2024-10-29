@@ -6,20 +6,6 @@ using namespace std;
 
 // Declaración de las variables y estructuras que se implementaran en el proyecto------------------------
 
-int MenuPrincipal();
-void subMenuGestion();
-int subMenuEntidad(string entidad);
-int subMenuServicio();
-void crearEntidad(string entidad);
-void mostrarEntidad(string entidad);
-void modificarEntidad(string entidad);
-void BorrarEntidad(string entidad);
-bool verificarExistencia(string entidad, int ci);
-void infVehiculo();
-void infUsuario();
-
-fstream DB;
-
 struct Vehiculo {
     char modelo[45];
     char conductor[45];
@@ -34,6 +20,21 @@ struct Usuario {
     char nombre[45];
     char sectorActual[45];
 };
+
+
+int MenuPrincipal();
+void subMenuGestion();
+int subMenuEntidad(string entidad);
+int subMenuServicio();
+void crearEntidad(string entidad);
+void mostrarEntidad(string entidad);
+void modificarEntidad(string entidad);
+void BorrarEntidad(string entidad);
+bool verificarExistencia(string entidad, int ci);
+Vehiculo infVehiculo();
+Usuario infUsuario();
+
+fstream DB;
 
 Usuario usuario;
 Vehiculo vehiculo;
@@ -228,17 +229,18 @@ void crearEntidad(string entidad){
     system("clear");
 
     if (!(strcasecmp(entidad.c_str(),"Vehiculo"))){
-        /* Código para ingresar un vehiculo en vehículos.txt */
+        /* Código para ingresar un vehiculo en vehículos.dat */
+        Vehiculo vehiculo = infVehiculo(); // almacena los datos en la variable global "vehiculo"
 
-        infVehiculo(); // almacena los datos en la variable global "vehiculo"
-
-        if(verificarExistencia(entidad, vehiculo.ci)){
+        if (verificarExistencia(entidad, vehiculo.ci))
+        {
             cout << "El usuario ingresado ya existe" << endl;
             system("read -p 'Presione enter para volver al menu principal...' var");
-            DB.close();
             MenuPrincipal();
-        }else{
-            DB.open("vehiculos.txt", ios::out | ios::app | ios::binary);
+        }
+        else
+        {
+            DB.open("vehiculos.dat", ios::out | ios::app | ios::binary);
             DB.write((char *)&vehiculo, sizeof(Vehiculo));
             DB.close();
             system("clear");
@@ -248,15 +250,16 @@ void crearEntidad(string entidad){
         }
     }
     if (!strcasecmp(entidad.c_str(),"Usuario")){
-        infUsuario(); // almacena los datos en la variable global "vehiculo"
+        Usuario usuario = infUsuario(); // almacena los datos en la variable global "vehiculo"
 
         if(verificarExistencia(entidad, usuario.ci)){
+
             cout << "El usuario ingresado ya existe" << endl;
             system("read -p 'Presione enter para volver al menu principal...' var");
             DB.close();
             MenuPrincipal();
         }else{
-            DB.open("usuarios.txt", ios::out | ios::app | ios::binary);
+            DB.open("usuarios.dat", ios::out | ios::app | ios::binary);
             DB.write((char *)&usuario, sizeof(Usuario));
             DB.close();
             system("clear");
@@ -266,9 +269,9 @@ void crearEntidad(string entidad){
         }
     }
     if (!strcasecmp(entidad.c_str(),"Sector")){
-        /* Código para ingresar un sector en sectores.txt */
+        /* Código para ingresar un sector en sectores.dat */
     }
-    
+    DB.close();
 }
 
 //-------------------------------------------------------------------------------
@@ -277,13 +280,14 @@ void mostrarEntidad(string entidad){
     system("clear");
     int ci;
 
+
     if (!strcasecmp(entidad.c_str(), "vehiculo")){
-        /* Código para mostrar un vehiculo en vehículos.txt */
+        /* Código para mostrar un vehiculo en vehículos.dat */
 
         cout << "CI del conductor que busca: ";
         cin >> ci;
 
-        DB.open("vehiculos.txt", ios::in | ios::binary);
+        DB.open("vehiculos.dat", ios::in | ios::binary);
 
         if(DB.is_open()){
             while (DB.read((char*)&vehiculo, sizeof(Vehiculo)))
@@ -312,24 +316,25 @@ void mostrarEntidad(string entidad){
         cout << "CI del usuario que busca: ";
         cin >> ci;
 
-        DB.open("usuarios.txt", ios::in | ios::binary);
+        DB.open("usuarios.dat", ios::in | ios::binary);
 
         if(DB.is_open()){
             while (DB.read((char*)&usuario, sizeof(Usuario)))
             {
-                if(usuario.ci == ci){
+                if (usuario.ci == ci)
+                {
                     cout << "----------Información del usuario----------" << endl;
                     cout << "|nombre del conductor: " << usuario.nombre << "|" << endl;
                     cout << "|Sector actual: " << usuario.sectorActual << "|" << endl;
                     cout << "---------------------------------------------" << endl;
                     break;
-            }
-            
+                }
         }
-    }   
+    }
+    DB.close();
     }
     if (!strcasecmp(entidad.c_str(),"sector")){
-        /* Código para mostrar un sector en sectores.txt */
+        /* Código para mostrar un sector en sectores.dat */
     }
 
     DB.close();
@@ -341,7 +346,7 @@ void modificarEntidad(string entidad){
     system("clear");
 
     if (!strcasecmp(entidad.c_str(),"vehiculo")){
-        /* Código para ingresar un vehiculo en vehículos.txt */
+        /* Código para ingresar un vehiculo en vehículos.dat */
         bool encontrado=false;
         int ci;
 
@@ -349,7 +354,7 @@ void modificarEntidad(string entidad){
         cout << "Introduzca la cédula del conductor que desea modificar los datos: ";
         cin >> ci;
 
-        DB.open("vehiculos.txt", ios::in | ios::out | ios::binary); // Relee y modifica, es decir, sobrescribe el archivo ya existente
+        DB.open("vehiculos.dat", ios::in | ios::out | ios::binary); // Relee y modifica, es decir, sobrescribe el archivo ya existente
 
         while (DB.read((char *)&vehiculo, sizeof(Vehiculo)))
         {
@@ -389,7 +394,7 @@ void modificarEntidad(string entidad){
         cout << "Introduzca la cédula del usuario que desea modificar los datos: ";
         cin >> ci;
 
-        DB.open("usuarios.txt", ios::in | ios::out | ios::binary); // Relee y modifica, es decir, sobrescribe el archivo ya existente
+        DB.open("usuarios.dat", ios::in | ios::out | ios::binary); // Relee y modifica, es decir, sobrescribe el archivo ya existente
 
         while (DB.read((char *)&usuario, sizeof(Usuario)))
         {
@@ -418,7 +423,7 @@ void modificarEntidad(string entidad){
 	DB.close();
     }
     if (!strcasecmp(entidad.c_str(),"sector")){
-        /* Código para ingresar un sector en sectores.txt */
+        /* Código para ingresar un sector en sectores.dat */
     }
 }
 
@@ -436,7 +441,7 @@ void BorrarEntidad(string entidad){
         cout << "Introduzca la cédula del conductor: ";
         cin >> ci;
 
-        DB.open("vehiculos.txt", ios::in | ios::out | ios::binary);
+        DB.open("vehiculos.dat", ios::in | ios::out | ios::binary);
 
         while (DB.read((char *)&vehiculo, sizeof(Vehiculo)))
         {
@@ -470,7 +475,7 @@ void BorrarEntidad(string entidad){
         cout << "Introduzca la cédula del usuario: ";
         cin >> ci;
 
-        DB.open("usuarios.txt", ios::in | ios::out | ios::binary);
+        DB.open("usuarios.dat", ios::in | ios::out | ios::binary);
 
         while (DB.read((char *)&usuario, sizeof(Usuario)))
         {
@@ -496,7 +501,7 @@ void BorrarEntidad(string entidad){
         DB.close();
     }
     if (!strcasecmp(entidad.c_str(),"sector")){
-        /* Código para ingresar un sector en sectores.txt */
+        /* Código para ingresar un sector en sectores.dat */
     }
 }
 
@@ -507,8 +512,8 @@ bool verificarExistencia(string entidad, int ci){
     bool existe = false;
 
     if (!strcasecmp(entidad.c_str(),"vehiculo")){
-        /* Código para ingresar un vehiculo en vehículos.txt */
-        DB.open("vehiculos.txt", ios::in | ios::binary);
+        /* Código para ingresar un vehiculo en vehículos.dat */
+        DB.open("vehiculos.dat", ios::in | ios::binary);
 
         while (DB.read((char*)&vehiculo, sizeof(Vehiculo)))
         {
@@ -520,7 +525,7 @@ bool verificarExistencia(string entidad, int ci){
         
     }
     if (!strcasecmp(entidad.c_str(),"usuario")){
-        DB.open("usuarios.txt", ios::in | ios::binary);
+        DB.open("usuarios.dat", ios::in | ios::binary);
 
         while (DB.read((char*)&usuario, sizeof(Usuario)))
         {
@@ -532,7 +537,7 @@ bool verificarExistencia(string entidad, int ci){
         
     }
     if (!strcasecmp(entidad.c_str(),"sector")){
-        /* Código para ingresar un sector en sectores.txt */
+        /* Código para ingresar un sector en sectores.dat */
     }
     DB.close();
     return existe;
@@ -541,29 +546,33 @@ bool verificarExistencia(string entidad, int ci){
 
 //Obtener los datos del vehiculo---------------------------------------------------
 
-void infVehiculo(){
+Vehiculo infVehiculo(){
+    Vehiculo vehiculo;
     cin.ignore();
-        cout << "nombre del chofer: ";
-        cin.getline(vehiculo.conductor, 45, '\n');
+    cout << "nombre del chofer: ";
+    cin.getline(vehiculo.conductor, 45, '\n');
 
-        cout << "modelo del vehiculo: ";
-        cin.getline(vehiculo.modelo, 45, '\n');
+    cout << "modelo del vehiculo: ";
+    cin.getline(vehiculo.modelo, 45, '\n');
 
-        cout << "Sector actual en el que estas: ";
-        cin.getline(vehiculo.sectorActual, 45, '\n');
+    cout << "Sector actual en el que estas: ";
+    cin.getline(vehiculo.sectorActual, 45, '\n');
 
-        cout << "edad del conductor: ";
-        cin >> vehiculo.edad;
+    cout << "edad del conductor: ";
+    cin >> vehiculo.edad;
 
-        cout << "CI del conductor: ";
-        cin >> vehiculo.ci;
+    cout << "CI del conductor: ";
+    cin >> vehiculo.ci;
+
+    return vehiculo;
 }
 
 //----------------------------------------------------------------------------------
 
 //Obtener datos de usuario----------------------------------------------------------
 
-void infUsuario(){
+Usuario infUsuario(){
+    Usuario usuario;
     cin.ignore();
 
     cout << "Nombre del usuario: ";
@@ -574,6 +583,8 @@ void infUsuario(){
 
     cout << "Cédula del usuario: ";
     cin >> usuario.ci;
+
+    return usuario;
 }
 
 //----------------------------------------------------------------------------------

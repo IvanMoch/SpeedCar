@@ -5,6 +5,23 @@
 using namespace std;
 
 // Declaración de las variables y estructuras que se implementaran en el proyecto------------------------
+
+int MenuPrincipal();
+void subMenuGestion();
+int subMenuEntidad(string entidad);
+void subMenuServicio();
+void crearEntidad(string entidad);
+void mostrarEntidad(string entidad);
+void modificarEntidad(string entidad);
+void BorrarEntidad(string entidad);
+bool verificarExistencia(string entidad, int ci);
+void ubicacionVehiculo();
+void solicitudTraslado();
+void infVehiculo();
+void infUsuario();
+
+fstream DB;
+
 struct Vehiculo {
     char modelo[45];
     char conductor[45];
@@ -21,33 +38,8 @@ struct Usuario {
     char sectorActual[45];
 };
 
-struct Sector {
-    char nombre[100];
-};
-
-int MenuPrincipal();
-void subMenuGestion();
-int subMenuEntidad(string entidad);
-void subMenuServicio();
-void crearEntidad(string entidad);
-void mostrarEntidad(string entidad);
-void modificarEntidad(string entidad);
-void BorrarEntidad(string entidad);
-bool verificarExistencia(string entidad, int ci);
-bool verificarExistenciaSector(string nombre);
-void mostrarVehiculosCerca(int ci);
-void ubicacionVehiculo();
-void solicitudTraslado(int ci);
-Vehiculo infVehiculo();
-Usuario infUsuario();
-int ci;
-
-fstream DB;
-
-
 Usuario usuario;
 Vehiculo vehiculo;
-Sector sector;
 
 //-------------------------------------------------------------------------------------
 
@@ -190,24 +182,14 @@ int subMenuEntidad( string entidad) {
     system("clear");
     int aux;
 
-    if(!strcasecmp(entidad.c_str(), "Vehiculo") || !strcasecmp(entidad.c_str(), "Usuario")){
     cout << "1)Crear " << entidad << endl;
     cout << "2)Mostrar "<< entidad << endl;
     cout << "3)Modificar " << entidad << endl;
     cout << "4)Borrar "<< entidad << endl;
     cout << "5)Salir del menu" << endl;
-    cout << "Ingrese su opción -> ";
+    cout << "Ingrese su opcion -> ";
     cin >> aux;
     cout << endl;
-    }
-
-    if(!strcasecmp(entidad.c_str(), "Sector")){
-        cout << "1)Crear " << entidad << endl;
-        cout << "4)Borrar " << entidad << endl;
-        cout << "Ingrese su opción ->";
-        cin >> aux;
-    }
-
     return aux;
 }
 
@@ -237,21 +219,9 @@ void subMenuServicio(){
 	switch(aux){
 		case 1:ubicacionVehiculo();
 		break;
-		case 2:
-            system("clear");
-            cin.ignore();
-            cout << "Coloque la cédula del usuario: ";
-            cin >> ci;
-            solicitudTraslado(ci);
-            break;
-        case 3:
-            system("clear");
-            cin.ignore();
-            cout << "Coloque la cédula del usuario: ";
-            cin >> ci;
-            mostrarVehiculosCerca(ci);
-            break;
-        }
+		case 2:solicitudTraslado();
+		break;
+	}
 }
 
 //----------------------------------------------------------------------------------
@@ -266,7 +236,7 @@ void crearEntidad(string entidad) {
     system("clear");
 
     if (!(strcasecmp(entidad.c_str(), "Vehiculo"))) {
-        Vehiculo vehiculo = infVehiculo(); // Almacena los datos en la variable global
+        infVehiculo(); // Almacena los datos en la variable global "vehiculo"
         if (verificarExistencia(entidad, vehiculo.ci)) {
             cout << "El usuario ingresado ya existe" << endl;
             system("read -p 'Presione enter para volver al menu principal...' var");
@@ -278,9 +248,9 @@ void crearEntidad(string entidad) {
                 DB.write((char *)&vehiculo, sizeof(Vehiculo));
                 DB.close();
                 system("clear");
-                cout << "-------------------" << endl;
-                cout << "|Vehiculo guardado|" << endl;
-                cout << "-------------------" << endl;
+                cout << "------------------" << endl;
+                cout << "|Usuario guardado|" << endl;
+                cout << "------------------" << endl;
                 system("read -p 'presione enter para continuar' var");
             } else {
                 cerr << "No se pudo abrir el archivo vehiculos.da" << endl;
@@ -289,7 +259,7 @@ void crearEntidad(string entidad) {
     }
 
     if (!strcasecmp(entidad.c_str(), "Usuario")) {
-        Usuario usuario = infUsuario(); // Almacena los datos en la variable global "usuario"
+        infUsuario(); // Almacena los datos en la variable global "usuario"
         if (verificarExistencia(entidad, usuario.ci)) {
             cout << "El usuario ingresado ya existe" << endl;
             system("read -p 'Presione enter para volver al menu principal...' var");
@@ -307,33 +277,6 @@ void crearEntidad(string entidad) {
                 system("read -p 'presione enter para continuar' var");
             } else {
                 cerr << "No se pudo abrir el archivo usuarios.da" << endl;
-            }
-        }
-    }
-
-    if (!strcasecmp(entidad.c_str(), "Sector")){
-        Sector sector;
-
-        cin.ignore();
-        cout << "Coloque el nombre del nuevo sector" << endl;
-        cin.getline(sector.nombre, 100, '\n');
-
-        if(verificarExistenciaSector(sector.nombre)){
-            cout << "El sector ya existe" << endl;
-            system("read -p 'Pulse enter para volver al menu principal' var");
-            MenuPrincipal();
-        }else{
-            DB.open("Sectores.dat", ios::out | ios::app | ios::binary);
-
-            if(DB.is_open()){
-                DB.write((char *)&sector, sizeof(Sector));
-                DB.close();
-                system("clear");
-                cout << "-----------------" << endl;
-                cout << "|Sector guardado|" << endl;
-                cout << "-----------------" << endl;
-                system("read -p 'presione enter para continuar' var");
-
             }
         }
     }
@@ -357,10 +300,10 @@ void mostrarEntidad(string entidad){
             while (DB.read((char*)&vehiculo, sizeof(Vehiculo)))
             {
                 if(vehiculo.ci == ci){
-                    cout << "----------Información del conductor----------" << endl;
+                    cout << "----------Informacion del conductor----------" << endl;
                     cout << "|nombre del conductor: " << vehiculo.conductor << "|" << endl;
                     cout << "|Modelo del vehiculo: " << vehiculo.modelo << "|" << endl;
-                    cout <<"|Placa del vehiculo: " << vehiculo.placa << "  |" << endl;
+                     cout <<"|Placa del vehiculo: " << vehiculo.placa << "  |" << endl;
                     cout << "|Sector actual: " << vehiculo.sectorActual << "|" << endl;
 
                     if(vehiculo.ocupado){
@@ -497,7 +440,6 @@ void modificarEntidad(string entidad){
 void BorrarEntidad(string entidad){
     system("clear");
     int ci;
-    char nombre[100];
 
     if (!strcasecmp(entidad.c_str(), "vehiculo"))
     {
@@ -533,7 +475,6 @@ void BorrarEntidad(string entidad){
         }
         DB.close();
     }
-    
     if (!strcasecmp(entidad.c_str(),"usuario")){
 
         bool encontrado = false;
@@ -567,38 +508,7 @@ void BorrarEntidad(string entidad){
         }
         DB.close();
     }
-
-    if (! strcasecmp(entidad.c_str(), "Sector")){
-        bool encontrado = false;
-
-        cin.ignore();
-        cout << "Introduzca el nombre del sector: ";
-        cin.getline(nombre, 100 , '\n');
-
-        DB.open("Sectores.dat", ios::in | ios::out | ios::binary);
-
-        while (DB.read((char *)&sector, sizeof(Sector)))
-        {
-            if (!strcasecmp(sector.nombre , nombre))
-            {
-
-                memset(sector.nombre,'\0',sizeof(sector.nombre));
-
-                DB.seekp(-static_cast<int>(sizeof(Sector)), ios::cur);  
-                DB.write(reinterpret_cast<char *>(&sector), sizeof(Sector));
-
-                encontrado = true;
-                cout << "Sector eliminado exitosamente" << endl;
-                break;
-            }
-        }
-
-        if (!encontrado)
-        {
-            cout << "Sector no encontrado" << endl;
-        }
-        DB.close();
-    }
+   
 }
 
 //-----------------------------------------------------------------------
@@ -637,27 +547,6 @@ bool verificarExistencia(string entidad, int ci){
     return existe;
 }
 
-bool verificarExistenciaSector( string nombre){
-    
-    bool existe = false;
-    DB.open("Sectores.dat", ios::in | ios::binary);
-
-    if(DB.is_open()){
-    while (DB.read((char *)&sector,sizeof(Sector)))
-        {
-            cout << sector.nombre << " " << nombre << endl;
-            system("read -p '...' var");
-            if (!strcasecmp(sector.nombre, nombre.c_str()))
-            {
-                existe = true;
-                break;
-            }
-        }
-        
-    }
-    DB.close();
-    return existe;
-}
 
 void ubicacionVehiculo(){
 	system("clear");
@@ -697,198 +586,70 @@ void ubicacionVehiculo(){
     DB.close();
 }
 
-void solicitudTraslado(int ci) {
-    cout << "---------------------------" << endl;
-    char destino[30];
-    bool realizado = false;
-
-    DB.open("usuarios.dat", ios::in | ios::out | ios::binary);
-    Usuario usuario;
-    Vehiculo vehiculo;
-
-    while (DB.read((char *)&usuario, sizeof(Usuario))) {
-        if (usuario.ci == ci) {
-            // Encontrado el usuario
-            DB.close();  // Cerrar el archivo de usuarios antes de abrir el de veh\EDculos
-
-            DB.open("vehiculos.dat", ios::in | ios::out | ios::binary);
-            
-
-            while (DB.read((char *)&vehiculo, sizeof(Vehiculo))) {
-                if (!vehiculo.ocupado && !strcmp(vehiculo.sectorActual, usuario.sectorActual)) {
-                    cout << "\tServicio Disponible en tu zona" << endl;
-                    cout << "Sector de Origen: " << vehiculo.sectorActual << endl;
-                    cout << "Ingrese el Destino: ";
-                    cin.ignore();  // Limpiar el buffer antes de getline
-                    cin.getline(destino, 100, '\n');
-
-                    strcpy(vehiculo.sectorActual, destino);
-                    strcpy(usuario.sectorActual, destino);
-
-                    // Mover el puntero hacia atr\E1s para sobrescribir
-                    DB.seekp(-static_cast<int>(sizeof(Vehiculo)), ios::cur);
-                    DB.write(reinterpret_cast<char*>(&vehiculo), sizeof(Vehiculo));
-
-                    realizado = true;
-                    break;
-                }
-            }
-
-            DB.close();  // Cerrar el archivo de veh\EDculos despu\E9s de la operaci\F3n
-        }
-    }
-
-    if (realizado == 1) {
-        cout << "----------REALIZANDO TRASLADO----------" << endl;
-        system("read -p 'presione enter cuando termine el traslado' var");
-        DB.open("usuarios.dat", ios::in | ios::out | ios::binary);
-        if(DB.is_open()){
-            while (DB.read((char *)&usuario, sizeof(Usuario)))
-            {
-                if (usuario.ci == ci)
-                {
-                    strcpy(usuario.sectorActual, destino);
-                    DB.seekp(-static_cast<int>(sizeof(Usuario)), ios::cur); 
-                    DB.write((char *)&usuario, sizeof(Usuario));
-                    break;
-                }
-            }
-            
-        }
-        DB.close();
-    }
-    else
-    {
-        cout << "El servicio no se encuentra disponible ahora mismo. Intentelo m\E1s tarde." << endl;
-        system("read -p 'presione enter para continuar' var");
-    }
-}
-
-void solicitarConductor(int ciUsuario, int ciConductor){
-    cout << "---------------------------" << endl;
-    char destino[30];
-    bool realizado = false;
-
-    DB.open("usuarios.dat", ios::in | ios::out | ios::binary);
-    Usuario usuario;
-    Vehiculo vehiculo;
-
-    while (DB.read((char *)&usuario, sizeof(Usuario))) {
-        if (usuario.ci == ci) {
-            // Encontrado el usuario
-            DB.close();  // Cerrar el archivo de usuarios antes de abrir el de veh\EDculos
-
-            DB.open("vehiculos.dat", ios::in | ios::out | ios::binary);
-            
-
-            while (DB.read((char *)&vehiculo, sizeof(Vehiculo))) {
-                if (!vehiculo.ocupado && !strcmp(vehiculo.sectorActual, usuario.sectorActual) && vehiculo.ci == ciConductor) {
-                    cout << "\tServicio Disponible en tu zona" << endl;
-                    cout << "Sector de Origen: " << vehiculo.sectorActual << endl;
-                    cout << "Ingrese el Destino: ";
-                    cin.ignore();  // Limpiar el buffer antes de getline
-                    cin.getline(destino, 100, '\n');
-
-                    strcpy(vehiculo.sectorActual, destino);
-                    strcpy(usuario.sectorActual, destino);
-
-                    // Mover el puntero hacia atr\E1s para sobrescribir
-                    DB.seekp(-static_cast<int>(sizeof(Vehiculo)), ios::cur);
-                    DB.write(reinterpret_cast<char*>(&vehiculo), sizeof(Vehiculo));
-
-                    realizado = true;
-                    break;
-                }
-            }
-
-            DB.close();  // Cerrar el archivo de veh\EDculos despu\E9s de la operaci\F3n
-        }
-    }
-
-    if (realizado == 1) {
-        cout << "----------REALIZANDO TRASLADO----------" << endl;
-        system("read -p 'presione enter cuando termine el traslado' var");
-        DB.open("usuarios.dat", ios::in | ios::out | ios::binary);
-        if(DB.is_open()){
-            while (DB.read((char *)&usuario, sizeof(Usuario)))
-            {
-                if (usuario.ci == ci)
-                {
-                    strcpy(usuario.sectorActual, destino);
-                    DB.seekp(-static_cast<int>(sizeof(Usuario)), ios::cur); 
-                    DB.write((char *)&usuario, sizeof(Usuario));
-                    break;
-                }
-            }
-            
-        }
-        DB.close();
-    }
-    else
-    {
-        cout << "El servicio no se encuentra disponible ahora mismo. Intentelo m\E1s tarde." << endl;
-        system("read -p 'presione enter para continuar' var");
-    }
-
-}
-
-void mostrarVehiculosCerca(int ciUsuario){
-
-    char sectorObjetivo[100];
-    int ciConductor;
-    bool usuarioEncontrado = false;
-    bool vehiculoEncontrado = false;
+void solicitudTraslado() {
     system("clear");
+    int ci;
+    char destino[30];
+    bool realizado = false;
 
-    DB.open("usuarios.dat", ios::in | ios::binary);
+    cout << "Introduzca la cedula del usuario que desea realizar el traslado: ";
+    cin >> ci;
 
-    if(DB.is_open()){
-        while(DB.read((char*)&usuario, sizeof(Usuario))){
-        if(usuario.ci == ciUsuario){
-            strcpy(sectorObjetivo, usuario.sectorActual);
-            usuarioEncontrado = true;
-        }
-    }
-    }
+    DB.open("usuarios.dat", ios::in | ios::out | ios::binary);
+   
 
-    DB.close();
+    Usuario usuario;
+    Vehiculo vehiculo;
 
-    DB.open("vehiculos.dat", ios::in | ios::binary);
+    while (DB.read(reinterpret_cast<char*>(&usuario), sizeof(Usuario))) {
+        if (usuario.ci == ci) {
+            // Encontrado el usuario
+            DB.close();  // Cerrar el archivo de usuarios antes de abrir el de veh�culos
 
-    if(DB.is_open()){
-        while (DB.read((char *)&vehiculo, sizeof(Vehiculo)))
-        {
-            if(!strcasecmp(vehiculo.sectorActual,sectorObjetivo) && !vehiculo.ocupado){
-                    cout << "----------Información del conductor----------" << endl;
-                    cout << "|Cédula del conductor: " << vehiculo.ci << "|" << endl;
-                    cout << "|Nombre del conductor: " << vehiculo.conductor << "|" << endl;
-                    cout << "|Modelo del vehiculo: " << vehiculo.modelo << "|" << endl;
-                    cout <<"|Placa del vehiculo: " << vehiculo.placa << "  |" << endl;
-                    cout << "|Sector actual: " << vehiculo.sectorActual << "|" << endl;
-                    cout << "---------------------------------------------" << endl;
-                    vehiculoEncontrado = true;
+            DB.open("vehiculos.dat", ios::in | ios::out | ios::binary);
+            
+
+            while (DB.read(reinterpret_cast<char*>(&vehiculo), sizeof(Vehiculo))) {
+                if (!vehiculo.ocupado && strcmp(vehiculo.sectorActual, usuario.sectorActual) == 0) {
+                    cout << "\tServicio Disponible en tu zona" << endl;
+                    cout << "Sector de Origen: " << vehiculo.sectorActual << endl;
+                    cout << "Ingrese el Destino: ";
+                    cin.ignore();  // Limpiar el buffer antes de getline
+                    cin.getline(destino, 30, '\n');
+
+                    strcpy(vehiculo.sectorActual, destino);
+                    strcpy(usuario.sectorActual, destino);
+
+                    // Mover el puntero hacia atr�s para sobrescribir
+                    DB.seekp(-static_cast<int>(sizeof(Vehiculo)), ios::cur);
+                    DB.write(reinterpret_cast<char*>(&vehiculo), sizeof(Vehiculo));
+
+                    realizado = true;
+                    break;
+                }
             }
+
+            DB.close();  // Cerrar el archivo de veh�culos despu�s de la operaci�n
+
+            break;
         }
-        
     }
 
-    DB.close();
-
-    if(vehiculoEncontrado){
-        cin.ignore();
-        cout << "Indique la cédula del conductor que desees : ";
-        cin >> ciConductor;
-        solicitarConductor(ciUsuario, ciConductor);
+    if (realizado) {
+        cout << "----------REALIZANDO TRASLADO----------" << endl;
+        system("read -p 'presione enter para continuar' var");
+    } else {
+        cout << "El servicio no se encuentra disponible ahora mismo. Intentelo m�s tarde." << endl;
     }
-
 }
+
 
 //Obtener los datos del vehiculo---------------------------------------------------
 
-Vehiculo infVehiculo() {
+void infVehiculo() {
     // Resetear la estructura vehiculo
-    Vehiculo vehiculo;
-
+    memset(&vehiculo, 0, sizeof(vehiculo));
+    
     cin.ignore();
     cout << "nombre del chofer: ";
     cin.getline(vehiculo.conductor, 45, '\n');
@@ -902,17 +663,16 @@ Vehiculo infVehiculo() {
     cin >> vehiculo.edad;
     cout << "CI del conductor: ";
     cin >> vehiculo.ci;
-
-    return vehiculo;
 }
+
 
 //----------------------------------------------------------------------------------
 
 //Obtener datos de usuario----------------------------------------------------------
 
-Usuario infUsuario(){
-
-    Usuario usuario;
+void infUsuario(){
+	//Resetea la estrcutura de Usuario
+	memset(&usuario, 0, sizeof(usuario));
 
     cin.ignore();
 
@@ -922,10 +682,8 @@ Usuario infUsuario(){
     cout << "Sector actual en que se encuentra el usuario: ";
     cin.getline(usuario.sectorActual, 45, '\n');
 
-    cout << "Cédula del usuario: ";
+    cout << "Cedula del usuario: ";
     cin >> usuario.ci;
-
-    return usuario;
 }
 
 //----------------------------------------------------------------------------------
